@@ -4,7 +4,6 @@ import React from 'react';
 import HeroStyle2 from '../ui/Hero/HeroStyle2';
 import Section from '../ui/Section';
 import AboutSectionStyle3 from '../ui/Section/AboutSection/AboutSectionStyle3';
-import AppointmentSectionStyle2 from '../ui/Section/AppointmentSection/AppointmentSectionStyle2';
 import BannerSectionStyle2 from '../ui/Section/BannerSection/BannerSectionStyle2';
 import BlogSectionStyle3 from '../ui/Section/BlogSection/BlogSectionStyle3';
 import BrandsSectionStyle2 from '../ui/Section/BrandsSection/BrandsSectionStyle2';
@@ -12,9 +11,8 @@ import DepartmentSectionStyle4 from '../ui/Section/DepartmentSection/DepartmentS
 import FaqSectionStyle2 from '../ui/Section/FaqSection/FaqSectionStyle2';
 import TestimonialSectionStyle2 from '../ui/Section/TestimonialSection/TestimonialSectionStyle2';
 import WorkingProcess from '../ui/Section/WorkingProcess';
-
 import aboutImg from '../../../../../../public/images/home_2/about.jpeg'
-import appointmentImg from '../../../../../../public/images/home_2/appointment_img.png'
+
 
 
 
