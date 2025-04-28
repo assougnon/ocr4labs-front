@@ -1,15 +1,20 @@
 import { useMemo } from 'react'
-
-import type { FieldValues } from 'react-hook-form';
 import { Controller } from 'react-hook-form'
-
+import type { Control, FieldValues } from 'react-hook-form'
 
 import { countries } from 'countries-list'
-
 import ReactCountryFlag from 'react-country-flag'
 
 import CustomAutocomplete from '@core/components/mui/Autocomplete'
 import CustomTextField from '@core/components/mui/TextField'
+
+
+interface CountrySelectProps<T extends FieldValues> {
+  control: Control<T>
+  name: string
+  required?: boolean
+  label?: string
+}
 
 export function CountrySelect<T extends FieldValues>({
                                                        control,
@@ -32,7 +37,6 @@ export function CountrySelect<T extends FieldValues>({
       control={control}
       rules={{ required: required ? 'Ce champ est obligatoire' : false }}
       render={({ field, fieldState }) => {
-        // Trouve l'option correspondant à la valeur actuelle
         const currentValue = countryOptions.find(option =>
           option.code === field.value || option.name === field.value
         ) || null
@@ -46,8 +50,7 @@ export function CountrySelect<T extends FieldValues>({
             renderOption={(props, option) => {
               const { key, ...restProps } = props
 
-
-return (
+              return (
                 <li key={key} {...restProps} className="flex items-center gap-3 ml-3">
                   <ReactCountryFlag
                     countryCode={option.code}
@@ -62,7 +65,6 @@ return (
               )
             }}
             onChange={(_, newValue) => {
-              // Stocke le code du pays plutôt que le nom
               field.onChange(newValue?.code || '')
             }}
             renderInput={(params) => (
