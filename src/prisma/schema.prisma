@@ -1,0 +1,165 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-1.1.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model doctrine_migration_versions {
+  version        String    @id @db.VarChar(191)
+  executed_at    DateTime? @db.Timestamp(0)
+  execution_time Int?
+}
+
+model medication {
+  id                                 String                               @id @default(uuid())
+  code                               String?                              @db.VarChar(255)
+  name                               String                               @db.VarChar(255)
+  form                               String                               @db.VarChar(255)
+  is_brand                           Boolean?
+  is_over_the_counter                Boolean?
+  route                              String?                              @db.VarChar(255)
+  prescription_medication_medication prescription_medication_medication[]
+}
+
+model patient {
+  id                     String         @id @default(uuid())
+  created_at             DateTime       @db.Timestamp(0)
+  updated_at             DateTime       @db.Timestamp(0)
+  name                   String         @db.VarChar(255)
+  date_of_birth          DateTime       @db.Date
+  gender                 String         @db.VarChar(1)
+  address                String?
+  phone_number           String         @db.VarChar(255)
+  social_security_number String?        @db.VarChar(255)
+  insurance_provider     String?        @db.VarChar(255)
+  insurance_number       String?        @db.VarChar(255)
+  prescription           prescription[]
+}
+
+model practitioner {
+  id                String         @id @default(uuid())
+  first_name        String         @db.VarChar(255)
+  last_name         String         @db.VarChar(255)
+  specialty         String         @db.VarChar(255)
+  license_number    String?        @db.VarChar(255)
+  practice_location String?        @db.VarChar(255)
+  contact_info      Json?          @db.Json
+  address           String?        @db.VarChar(255)
+  languages_spoken  String?        @db.VarChar(255)
+  prescription      prescription[]
+}
+
+model pres_request {
+  id       String @id @default(uuid())
+  language String @db.VarChar(5)
+  raw_text String
+}
+
+model prescription {
+  id                                   String                                 @id @default(uuid())
+  patient_id                           String?
+  practitioner_id                      String?
+  status                               String?                                @db.VarChar(255)
+  intent                               String?                                @db.VarChar(255)
+  reason_code                          String?                                @db.VarChar(255)
+  note                                 String?
+  authored_on                          DateTime?                              @db.Timestamp(0)
+  practitioner                         practitioner?                          @relation(fields: [practitioner_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_1fbfb8d91121ea2c")
+  patient                              patient?                               @relation(fields: [patient_id], references: [id], onDelete: NoAction, onUpdate: NoAction, map: "fk_1fbfb8d96b899279")
+  prescription_medication_prescription prescription_medication_prescription[]
+
+  @@index([practitioner_id], map: "idx_1fbfb8d91121ea2c")
+  @@index([patient_id], map: "idx_1fbfb8d96b899279")
+}
+
+model prescription_medication {
+  id                                   String                                 @id @default(uuid())
+  dosage_instruction                   String?
+  quantity                             Int?
+  prescription_medication_medication   prescription_medication_medication[]
+  prescription_medication_prescription prescription_medication_prescription[]
+}
+
+model prescription_medication_medication {
+  prescription_medication_id String
+  medication_id              String
+  medication                 medication              @relation(fields: [medication_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_12b49b112c4de6da")
+  prescription_medication    prescription_medication @relation(fields: [prescription_medication_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_12b49b114f579006")
+
+  @@id([prescription_medication_id, medication_id])
+  @@index([medication_id], map: "idx_12b49b112c4de6da")
+  @@index([prescription_medication_id], map: "idx_12b49b114f579006")
+}
+
+model prescription_medication_prescription {
+  prescription_medication_id String
+  prescription_id            String
+  prescription_medication    prescription_medication @relation(fields: [prescription_medication_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_f83d68d54f579006")
+  prescription               prescription            @relation(fields: [prescription_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "fk_f83d68d593db413d")
+
+  @@id([prescription_medication_id, prescription_id])
+  @@index([prescription_medication_id], map: "idx_f83d68d54f579006")
+  @@index([prescription_id], map: "idx_f83d68d593db413d")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user user @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model user {
+  id               String    @id @default(uuid())
+  name             String?
+  firstName        String?
+  lastName         String?
+  image            String?
+  birthDate        DateTime?
+  email            String?   @unique(map: "uniq_identifier_email") @db.VarChar(180)
+  phone            String?   @db.VarChar(25)
+  gender           String?   @db.VarChar(2)
+  emergencyContact Json?
+  address          Json?
+  bloodType        String?
+  status           String    @default("INACTIVE")
+  emailVerified    DateTime?
+  password         String?
+  roles            Json?     @db.Json
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime? @updatedAt
+  accounts         Account[]
+  sessions         Session[]
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
