@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import bcrypt from 'bcryptjs'
-import { prisma } from '@/libs/prisma' // <-- Corrigé ici
+import { prisma } from '@/libs/prisma'
+import { Prisma } from '@prisma/client'
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email format').min(1, 'Email is required'),
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
       where: { email },
     })
 
-    if (!user) {
+    if (!user || !user.password) {
       return NextResponse.json({ message: ['Email or Password is invalid'] }, { status: 401 })
     }
 
@@ -37,7 +38,19 @@ export async function POST(req: Request) {
 
     return NextResponse.json(filteredUserData)
   } catch (err) {
-    console.error('Error authenticating user:', err)
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      if (err.code === 'P2025') {
+        return NextResponse.json({ message: ['User not found'] }, { status: 404 })
+      }
+
+      if (err.code === 'P2002') {
+        return NextResponse.json({ message: ['Duplicate field error'] }, { status: 409 })
+      }
+
+      return NextResponse.json({ message: ['Database error'] }, { status: 400 })
+    }
+
+    console.error('Unexpected error:', err)
     return NextResponse.json({ message: ['Internal Server Error'] }, { status: 500 })
   }
 }
