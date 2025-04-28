@@ -3,7 +3,7 @@ import Grid from '@mui/material/Grid2'
 
 // Component Imports
 import Page from './details/page'
-import AccountDelete from './AccountDelete'
+
 
 const Account = () => {
   return (
@@ -11,9 +11,7 @@ const Account = () => {
       <Grid size={{ xs: 12 }}>
         <Page />
       </Grid>
-      <Grid size={{ xs: 12 }}>
-        <AccountDelete />
-      </Grid>
+
     </Grid>
   )
 }
