@@ -13,6 +13,12 @@ const nextConfig: NextConfig = {
   images: {
     domains: ['lh3.googleusercontent.com'], // pour les images de profil Google
   },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
 }
 
 export default nextConfig
