@@ -1,17 +1,15 @@
 import { useMemo } from 'react'
+import type { Control, FieldValues, Path } from 'react-hook-form'
 import { Controller } from 'react-hook-form'
-import type { Control, FieldValues } from 'react-hook-form'
-
 import { countries } from 'countries-list'
 import ReactCountryFlag from 'react-country-flag'
-
 import CustomAutocomplete from '@core/components/mui/Autocomplete'
 import CustomTextField from '@core/components/mui/TextField'
 
 
-interface CountrySelectProps<T extends FieldValues> {
+export interface CountrySelectProps<T extends FieldValues> {
   control: Control<T>
-  name: string
+  name: Path<T>
   required?: boolean
   label?: string
 }
