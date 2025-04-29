@@ -37,7 +37,7 @@ export function CountrySelect<T extends FieldValues>({
     <Controller
       name={name}
       control={control}
-      rules={{ required: required ? 'Ce champ est obligatoire' : false }}
+      rules={required ? { required: 'Ce champ est obligatoire' } : undefined}
       render={({ field, fieldState }) => {
         const currentValue = countryOptions.find(option =>
           option.code === field.value || option.name === field.value
