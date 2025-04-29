@@ -87,9 +87,9 @@ const AccountDetails = () => {
   }
 
   const handleImageReset = () => {
-    setImgSrc('/images/avatars/1.png')
-    setValue('image', '')
-  }
+    setImgSrc('/images/avatars/1.png');
+    setValue('image', undefined);
+  };
 
   const onSubmit = async (data: AccountFormValues) => {
     console.log('Données validées:', data)
