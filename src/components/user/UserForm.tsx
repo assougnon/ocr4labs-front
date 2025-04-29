@@ -52,7 +52,7 @@ const AccountDetails = () => {
   } = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
     defaultValues: {
-      gender: '',
+      gender: null,
       bloodType: '',
       birthDate: '',
       roles: [],
