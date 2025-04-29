@@ -15,7 +15,11 @@ interface CountrySelectProps<T extends FieldValues> {
   required?: boolean
   label?: string
 }
-
+function countryCodeToEmoji(countryCode: string) {
+  return countryCode
+    .toUpperCase()
+    .replace(/./g, char => String.fromCodePoint(127397 + char.charCodeAt(0)))
+}
 export function CountrySelect<T extends FieldValues>({
                                                        control,
                                                        name,
@@ -27,7 +31,7 @@ export function CountrySelect<T extends FieldValues>({
       code,
       name: data.name,
       phone: data.phone,
-      emoji: data.emoji
+      emoji: countryCodeToEmoji(code)
     }))
   }, [])
 
