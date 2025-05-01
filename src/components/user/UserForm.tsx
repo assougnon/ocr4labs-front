@@ -1,33 +1,46 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import { useForm, Controller } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { format } from 'date-fns'
+import React, { useState, useMemo, useEffect } from 'react'
+import type { ChangeEvent } from 'react'
+
+
 import { fr } from 'date-fns/locale'
-import axios from 'axios'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm, Controller } from 'react-hook-form'
+import { format } from 'date-fns'
 
 // MUI Imports
 import Grid from '@mui/material/Grid2'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
 import Button from '@mui/material/Button'
 import Typography from '@mui/material/Typography'
-import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
+import Chip from '@mui/material/Chip'
+import type { SelectChangeEvent } from '@mui/material/Select'
+
+// Schemas
+import Divider from '@mui/material/Divider'
+
+import { CardActions } from '@mui/material'
+
+import axios from 'axios'
+
+import type { AccountFormValues} from '../../schemas/account.schema';
+import { accountFormSchema } from '../../schemas/account.schema'
+
+import { CountrySelect } from '@components/country/ContrySelect'
 
 // Components
 import CustomTextField from '@core/components/mui/TextField'
 import AppReactDatepicker from '@/libs/styles/AppReactDatepicker'
-import { CountrySelect } from '@components/country/ContrySelect'
 
-// Schemas
-import type { AccountFormValues } from '../../schemas/account.schema'
-import { accountFormSchema } from '../../schemas/account.schema'
-import type { FieldErrors } from 'react-hook-form'
+
+
+
 
 const AccountDetails = () => {
+  // Form setup
   const {
     control,
     register,
@@ -35,69 +48,78 @@ const AccountDetails = () => {
     setValue,
     reset,
     watch,
-    formState: { errors, isSubmitting },
+    formState: { errors, isSubmitting }
   } = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
     defaultValues: {
-      gender: null,
+      gender: '',
       bloodType: '',
       birthDate: '',
       roles: [],
       address: {},
-      emergencyContact: {},
-    },
+      emergencyContact: {}
+    }
   })
-
-  const [imgSrc, setImgSrc] = useState<string>('/images/avatars/1.png')
 
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const response = await axios.get('/api/user/profile')
-        const userData = response.data
+      const response = await axios.get('/api/user/profile')
+      const userData = response.data
 
-        reset({
-          ...userData,
-          birthDate: userData.birthDate
-            ? format(new Date(userData.birthDate), 'dd-MM-yyyy')
-            : '',
-          address: userData.address || {},
-          emergencyContact: userData.emergencyContact || {},
-        })
-      } catch (error) {
-        console.error('Erreur lors du chargement du profil:', error)
-      }
+      reset({
+        ...userData,
+        // Convert API date (likely yyyy-MM-dd) to display format (dd-MM-yyyy)
+        birthDate: userData.birthDate
+          ? format(new Date(userData.birthDate), 'dd-MM-yyyy')
+          : '',
+        address: userData.address || {},
+        emergencyContact: userData.emergencyContact || {},
+      })
     }
 
     fetchData()
   }, [reset])
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+
+  // States
+  const [imgSrc, setImgSrc] = useState<string>('/images/avatars/1.png')
+
+
+
+
+
+
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
     const reader = new FileReader()
     const files = e.target.files
 
     if (files && files.length !== 0) {
       reader.onload = () => {
         const result = reader.result as string
+
         setImgSrc(result)
         setValue('image', result)
       }
+
       reader.readAsDataURL(files[0])
     }
   }
 
   const handleImageReset = () => {
-    setImgSrc('/images/avatars/1.png');
-    setValue('image', undefined);
-  };
+    setImgSrc('/images/avatars/1.png')
+    setValue('image', '')
+  }
 
   const onSubmit = async (data: AccountFormValues) => {
-    console.log('Données validées:', data)
-  }
 
-  const onError = (errors: FieldErrors<AccountFormValues>) => {
-    console.error('Erreurs de validation:', errors)
+
+    console.log('Données validées:', data);
+
   }
+  const onError = (errors: any) => {
+    console.error("Erreurs de validation:", errors);
+  };
+
 
   return (
     <Card>
@@ -134,7 +156,8 @@ const AccountDetails = () => {
                 Réinitialiser
               </Button>
             </div>
-            <Typography>Formats acceptés : JPG, PNG. Taille max : 800Ko</Typography>
+            <Typography>{errors.lastName?.message}leon </Typography> <Typography>Formats acceptés : JPG, PNG. Taille max : 800Ko</Typography>
+
           </div>
         </div>
       </CardContent>
@@ -143,7 +166,10 @@ const AccountDetails = () => {
         <Divider />
       </Grid>
 
-      <form onSubmit={handleSubmit(onSubmit, onError)}>
+
+      <form  onSubmit={handleSubmit(onSubmit, onError)}>
+
+
         <CardContent>
           <Grid container spacing={6}>
             <Grid size={{ xs: 12 }}>
@@ -152,6 +178,7 @@ const AccountDetails = () => {
               </Typography>
             </Grid>
 
+            {/* Informations personnelles */}
             <Grid size={{ xs: 12, sm: 6 }}>
               <CustomTextField
                 fullWidth
@@ -174,14 +201,17 @@ const AccountDetails = () => {
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <Controller
-                name='birthDate'
+                name="birthDate"
                 control={control}
                 render={({ field }) => {
+                  // Convert display format (dd-MM-yyyy) to Date object
                   const parseDate = (value: string): Date | null => {
                     if (!value) return null
                     const [day, month, year] = value.split('-')
                     return new Date(`${year}-${month}-${day}`)
                   }
+
+                  // Convert Date to display format (dd-MM-yyyy)
                   const formatDate = (date: Date | null): string => {
                     if (!date || isNaN(date.getTime())) return ''
                     return format(date, 'dd-MM-yyyy')
@@ -195,13 +225,13 @@ const AccountDetails = () => {
                       }}
                       showYearDropdown
                       showMonthDropdown
-                      dropdownMode='select'
-                      placeholderText='JJ-MM-AAAA'
-                      dateFormat='dd-MM-yyyy'
+                      dropdownMode="select"
+                      placeholderText="JJ-MM-AAAA"
+                      dateFormat="dd-MM-yyyy"
                       customInput={
                         <CustomTextField
                           fullWidth
-                          label='Date de naissance'
+                          label="Date de naissance"
                           error={!!errors.birthDate}
                           helperText={errors.birthDate?.message}
                         />
@@ -214,7 +244,6 @@ const AccountDetails = () => {
                 }}
               />
             </Grid>
-
             <Grid size={{ xs: 12, sm: 6 }}>
               <CustomTextField
                 fullWidth
@@ -225,15 +254,18 @@ const AccountDetails = () => {
               />
             </Grid>
 
+
             <Grid size={{ xs: 12 }}>
               <Divider />
             </Grid>
-
             <Grid size={{ xs: 12 }}>
               <Typography variant='body2' className='font-medium'>
-                2. Données personnelles
+                2. données personnelles
               </Typography>
             </Grid>
+
+
+            {/* Coordonnées */}
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <CustomTextField
@@ -242,14 +274,11 @@ const AccountDetails = () => {
                 label='Genre'
                 value={watch('gender') ?? ''}
                 {...register('gender')}
-                error={!!errors.gender}
-                helperText={errors.gender?.message}
               >
                 <MenuItem value='M'>Homme</MenuItem>
                 <MenuItem value='F'>Femme</MenuItem>
               </CustomTextField>
             </Grid>
-
             <Grid size={{ xs: 12, sm: 6 }}>
               <CustomTextField
                 fullWidth
@@ -260,10 +289,12 @@ const AccountDetails = () => {
               />
             </Grid>
 
+            {/* Adresse */}
             <Grid size={{ xs: 12, sm: 6 }}>
               <CustomTextField
                 select
                 fullWidth
+                defaultValue=""
                 label='Groupe Sanguin'
                 value={watch('bloodType') ?? ''}
                 {...register('bloodType')}
@@ -280,20 +311,15 @@ const AccountDetails = () => {
                 <MenuItem value='O-'>Groupe O-</MenuItem>
               </CustomTextField>
             </Grid>
-
             <Grid size={{ xs: 12, sm: 6 }}>
-              <Controller
-                name='address.country'
+              <CountrySelect
                 control={control}
-                render={({ field }) => (
-                  <CountrySelect
-                    control={control}
-                    name='address.country'
-                    label='Pays de résidence*'
-                    error={!!errors.address?.country}
-                    helperText={errors.address?.country?.message}
-                  />
-                )}
+                name="address.country"
+                required
+                label="Pays de résidence*"
+                {...register('address.country')}
+                error={!!errors.address?.message}
+                helperText={errors.address?.message}
               />
             </Grid>
 
@@ -302,8 +328,6 @@ const AccountDetails = () => {
                 fullWidth
                 label='Ville'
                 {...register('address.city')}
-                error={!!errors.address?.city}
-                helperText={errors.address?.city?.message}
               />
             </Grid>
 
@@ -312,32 +336,24 @@ const AccountDetails = () => {
                 fullWidth
                 label='Région'
                 {...register('address.state')}
-                error={!!errors.address?.state}
-                helperText={errors.address?.state?.message}
               />
             </Grid>
+
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <CustomTextField
                 fullWidth
                 label='Code postal'
                 {...register('address.zip')}
-                error={!!errors.address?.zip}
-                helperText={errors.address?.zip?.message}
               />
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
-              <Divider />
-            </Grid>
-
+            {/* Contact d'urgence */}
             <Grid size={{ xs: 12, sm: 6 }}>
               <CustomTextField
                 fullWidth
                 label='Nom du contact'
                 {...register('emergencyContact.name')}
-                error={!!errors.emergencyContact?.name}
-                helperText={errors.emergencyContact?.name?.message}
               />
             </Grid>
 
@@ -346,8 +362,6 @@ const AccountDetails = () => {
                 fullWidth
                 label='Téléphone du contact'
                 {...register('emergencyContact.phone')}
-                error={!!errors.emergencyContact?.phone}
-                helperText={errors.emergencyContact?.phone?.message}
               />
             </Grid>
 
@@ -356,19 +370,22 @@ const AccountDetails = () => {
                 fullWidth
                 label='Relation'
                 {...register('emergencyContact.relation')}
-                error={!!errors.emergencyContact?.relation}
-                helperText={errors.emergencyContact?.relation?.message}
               />
             </Grid>
+
+
+            <Divider />
           </Grid>
         </CardContent>
-
         <Divider />
         <CardActions>
-          <Button type='submit' variant='contained' className='mie-2' disabled={isSubmitting}>
+          <Button type='submit' variant='contained' className='mie-2'>
             Submit
           </Button>
+
         </CardActions>
+
+
       </form>
     </Card>
   )
